@@ -1,5 +1,5 @@
 const express = require('express');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 const { readFile, writeFile } = require('fs').promises
 
 const app = express();
@@ -8,13 +8,18 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded());
 
 app.get('/', async (request, response) => {
-    response.redirect('./map');
+    response.send();
 })
 
 app.get('/map', async (request, response) => {
 
-    const gropjason = await readFile("".concat('./groups/', request.query.group, '.json'), 'utf-8');
-    response.render('map', { group: request.query.group, data: gropjason });
+    const gropjason = await readFile('./groups/'.concat(request.query.group, '.json'), 'utf-8', (err, data) => {
+        if (err) {
+            response.render('map');
+            return;
+        }
+    });
+    response.render('map', {group: request.query.group, data: gropjason});
 });
 
 app.get('/testpost', async (request, response) => {
