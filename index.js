@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { readFile, writeFile } = require('fs').promises
+const { readFile, writeFile } = require('fs')
+const path = require('path');
 
 const app = express();
 
@@ -12,26 +13,31 @@ app.get('/', async (request, response) => {
 })
 
 app.get('/map', async (request, response) => {
-
-    const gropjason = await readFile('./groups/'.concat(request.query.group, '.json'), 'utf-8', (err, data) => {
+    // await readFile('./groups/'.concat(request.query.group, '.json'), (err, data) => {
+    //     if (err) {
+    //         response.send("Group not found");
+    //         return;
+    //     }
+    //     response.send("".concat(data));
+    // });
+    console.log(path.join(__dirname, "./groups/", request.query.group.concat(".json")));
+    response.sendFile(path.join(__dirname, "./groups/", request.query.group.concat(".json")), (err, data) => {
         if (err) {
-            response.render('map');
-            return;
+            response.send("Group not found");
         }
-    });
-    response.render('map', {group: request.query.group, data: gropjason});
+    })
 });
 
-app.get('/testpost', async (request, response) => {
-    response.render('testpost');
+app.get('/show', async (request, response) => {
+    response.render('show');
 })
 
-app.post('/testpost', async (request, response) => {
+app.post('/show', async (request, response) => {
     const groupjson = await readFile('./groups/'.concat(request.body.group, '.json'));
     var jsonobj = JSON.parse(groupjson);
-    jsonobj[request.body.name] = {"loc": request.body.location, "time": Date.now()};
+    jsonobj[request.body.name] = {"lat": request.body.lat, "lng": request.body.lng, "time": Date.now()};
     await writeFile('./groups/'.concat(request.body.group, '.json'), JSON.stringify(jsonobj));
-    response.redirect('./map?group='.concat(request.body.group));
+    response.end;
 })
 
 app.listen(process.env.PORT || 3000, () => console.log(`App available on http://localhost:3000`))
